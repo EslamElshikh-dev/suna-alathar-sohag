@@ -55,6 +55,21 @@ const circles = {
 
 const timeLabels = { weekly: 'ساعة أسبوعيًا', monthly: 'يوم كل شهر', flex: 'حسب وقتي' };
 
+const identityDialog = $('#identity-dialog');
+const identityTrigger = $('#identity-open');
+identityTrigger.addEventListener('click', () => {
+  identityDialog.showModal();
+  document.body.classList.add('dialog-is-open');
+});
+$('.identity-close', identityDialog).addEventListener('click', () => identityDialog.close());
+identityDialog.addEventListener('click', event => {
+  if (event.target === identityDialog) identityDialog.close();
+});
+identityDialog.addEventListener('close', () => {
+  document.body.classList.remove('dialog-is-open');
+  identityTrigger.focus({ preventScroll: true });
+});
+
 $('.motion-toggle').addEventListener('click', event => {
   const paused = document.body.classList.toggle('motion-paused');
   event.currentTarget.setAttribute('aria-pressed', String(paused));
@@ -140,7 +155,7 @@ $('#privacy-open').addEventListener('click', event => showDialog({
 $('#site-note-open').addEventListener('click', event => showDialog({
   eyebrow: 'صنّاع الأثر / سوهاج', title: 'عن هذه النسخة.',
   description: 'هذه نسخة تعريفية أولى لهوية صنّاع الأثر في سوهاج. مساحات المشاركة المعروضة أفكار مقترحة، ولا تعني وجود برامج أو تسجيل مفتوح.',
-  items: ['تُضاف بيانات الفريق، وقنواته الرسمية، والأنشطة الفعلية بعد اعتمادها.', 'لا يعرض الموقع شراكات أو أرقام إنجازات أو صفة قانونية غير موثّقة.', 'الصور مولّدة بصريًا للتعبير عن روح المشاركة، وليست توثيقًا لأنشطة الفريق. والرسم المستوحى من النيل ليس خريطة فروع.'], action: false
+  items: ['الشعار تصميم جديد مقترح لهوية الموقع، وليس شعارًا رسميًا منقولًا من جهة أخرى.', 'تُضاف بيانات الفريق، وقنواته الرسمية، والأنشطة الفعلية بعد اعتمادها.', 'لا يعرض الموقع شراكات أو أرقام إنجازات أو صفة قانونية غير موثّقة.', 'الصور مولّدة بصريًا للتعبير عن روح المشاركة، وليست توثيقًا لأنشطة الفريق. والرسم المستوحى من النيل ليس خريطة فروع.'], action: false
 }, event.currentTarget));
 
 function selectedValues() {
