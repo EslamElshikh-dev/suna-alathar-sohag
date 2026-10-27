@@ -1,0 +1,11 @@
+import { cp, mkdir, readFile, writeFile, rm } from 'node:fs/promises';
+const base = new URL('../', import.meta.url);
+await rm(new URL('dist/', base), { recursive: true, force: true });
+await mkdir(new URL('dist/', base), { recursive: true });
+await cp(new URL('public/', base), new URL('dist/', base), { recursive: true });
+const origin = 'https://suna-alathar-sohag.vercel.app';
+const html = await readFile(new URL('dist/index.html', base), 'utf8');
+await writeFile(new URL('dist/index.html', base), html.replaceAll('__SITE_URL__', origin));
+await writeFile(new URL('dist/robots.txt', base), `User-agent: *\nAllow: /\nSitemap: ${origin}/sitemap.xml\n`);
+await writeFile(new URL('dist/sitemap.xml', base), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>${origin}/</loc></url></urlset>\n`);
+console.log('Static production build ready in dist/. No runtime services or third-party requests.');

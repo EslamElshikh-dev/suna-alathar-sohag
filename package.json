@@ -1,0 +1,13 @@
+{
+  "name": "suna-alathar-sohag",
+  "version": "1.0.0",
+  "private": true,
+  "description": "صنّاع الأثر | سوهاج — موقع عربي وتجربة تفاعلية للمشاركة المجتمعية",
+  "type": "module",
+  "engines": { "node": "24.x" },
+  "scripts": {
+    "dev": "node scripts/dev.mjs",
+    "build": "node scripts/build.mjs",
+    "check": "node --check public/app.js && node --check scripts/build.mjs && node scripts/check.mjs"
+  }
+}
