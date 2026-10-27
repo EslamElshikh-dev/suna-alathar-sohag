@@ -7,14 +7,13 @@ if (new Set(ids).size !== ids.length) errors.push('Duplicate HTML IDs.');
 if ((html.match(/<h1\b/g) || []).length !== 1) errors.push('Home page must have exactly one H1.');
 if (!html.includes('<html lang="ar" dir="rtl">')) errors.push('Arabic direction and language missing.');
 for (const [,target] of html.matchAll(/href="#([^"]+)"/g)) if (!ids.includes(target)) errors.push(`Missing anchor: ${target}`);
-const assets = new Set([...html.matchAll(/(?:src|href)="(\/(?:assets\/[^"?]+|app\.js|styles\.css))"/g)].map(match => match[1]));
+const assets = new Set([...html.matchAll(/(?:src|href)="(\/(?:assets\/[^"?]+|app\.js|styles\.css|favicon\.png|apple-touch-icon\.png))"/g)].map(match => match[1]));
 for (const asset of assets) { try { await access(new URL('.' + asset, root)); } catch { errors.push(`Missing asset: ${asset}`); } }
 const css = await readFile(new URL('styles.css', root), 'utf8');
 const options = [...html.matchAll(/<option>([^<]+)<\/option>/g)].map(match => match[1]);
 const districts = [...html.matchAll(/data-district="([^"]+)"/g)].map(match => match[1]);
 for (const district of districts) if (!options.includes(district)) errors.push(`Missing district option: ${district}`);
 if (options.length !== 13 || new Set(options).size !== 13) errors.push('Expected 12 district choices plus the outside-Sohag choice.');
-await access(new URL('assets/social-card-v4.jpg', root));
 for (const [,asset] of html.matchAll(/property="og:image" content="__SITE_URL__(\/assets\/[^\"]+)"/g)) {
   try { await access(new URL('.' + asset, root)); } catch { errors.push(`Missing social sharing image: ${asset}`); }
 }

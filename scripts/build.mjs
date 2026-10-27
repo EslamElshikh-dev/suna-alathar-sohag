@@ -7,5 +7,5 @@ const origin = 'https://suna-alathar-sohag.vercel.app';
 const html = await readFile(new URL('dist/index.html', base), 'utf8');
 await writeFile(new URL('dist/index.html', base), html.replaceAll('__SITE_URL__', origin));
 await writeFile(new URL('dist/robots.txt', base), `User-agent: *\nAllow: /\nSitemap: ${origin}/sitemap.xml\n`);
-await writeFile(new URL('dist/sitemap.xml', base), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>${origin}/</loc></url></urlset>\n`);
+await writeFile(new URL('dist/sitemap.xml', base), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"><url><loc>${origin}/</loc><image:image><image:loc>${origin}/assets/community-v2.webp</image:loc></image:image></url></urlset>\n`);
 console.log('Static production build ready in dist/. No runtime services or third-party requests.');
