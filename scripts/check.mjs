@@ -14,7 +14,10 @@ const options = [...html.matchAll(/<option>([^<]+)<\/option>/g)].map(match => ma
 const districts = [...html.matchAll(/data-district="([^"]+)"/g)].map(match => match[1]);
 for (const district of districts) if (!options.includes(district)) errors.push(`Missing district option: ${district}`);
 if (options.length !== 13 || new Set(options).size !== 13) errors.push('Expected 12 district choices plus the outside-Sohag choice.');
-await access(new URL('assets/social-card.png', root));
+await access(new URL('assets/social-card-v2.jpg', root));
+for (const [,asset] of html.matchAll(/property="og:image" content="__SITE_URL__(\/assets\/[^\"]+)"/g)) {
+  try { await access(new URL('.' + asset, root)); } catch { errors.push(`Missing social sharing image: ${asset}`); }
+}
 for (const [,asset] of css.matchAll(/url\(['"]?(\/assets\/[^)'"?]+)/g)) { try { await access(new URL('.' + asset, root)); } catch { errors.push(`Missing CSS asset: ${asset}`); } }
 for (const tag of ['title', 'meta name="description"', 'link rel="canonical"', 'meta property="og:image"']) if (!html.includes('<' + tag)) errors.push(`Missing metadata: ${tag}`);
 const jsonld = html.match(/<script type="application\/ld\+json">(.*?)<\/script>/s);

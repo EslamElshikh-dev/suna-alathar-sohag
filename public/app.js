@@ -73,7 +73,7 @@ function toast(message) {
 
 function closeMenu(returnFocus = false) {
   menuButton.setAttribute('aria-expanded', 'false');
-  menuButton.setAttribute('aria-label', 'فتح القائمة');
+  menuButton.setAttribute('aria-label', 'فتح بوصلة الأثر');
   mobileMenu.hidden = true;
   if (returnFocus) menuButton.focus();
 }
@@ -81,13 +81,13 @@ function closeMenu(returnFocus = false) {
 menuButton.addEventListener('click', () => {
   const open = menuButton.getAttribute('aria-expanded') !== 'true';
   menuButton.setAttribute('aria-expanded', String(open));
-  menuButton.setAttribute('aria-label', open ? 'إغلاق القائمة' : 'فتح القائمة');
+  menuButton.setAttribute('aria-label', open ? 'إغلاق بوصلة الأثر' : 'فتح بوصلة الأثر');
   mobileMenu.hidden = !open;
 });
 $$('a', mobileMenu).forEach(link => link.addEventListener('click', () => closeMenu()));
 document.addEventListener('keydown', event => { if (event.key === 'Escape' && !mobileMenu.hidden) closeMenu(true); });
 document.addEventListener('click', event => { if (!mobileMenu.hidden && !event.target.closest('.site-header')) closeMenu(); });
-window.matchMedia('(min-width: 701px)').addEventListener('change', event => { if (event.matches) closeMenu(); });
+window.matchMedia('(min-width: 1024px)').addEventListener('change', event => { if (event.matches) closeMenu(); });
 
 function listItems(target, items) {
   target.replaceChildren(...items.map(text => {
@@ -140,7 +140,7 @@ $('#privacy-open').addEventListener('click', event => showDialog({
 $('#site-note-open').addEventListener('click', event => showDialog({
   eyebrow: 'صنّاع الأثر / سوهاج', title: 'عن هذه النسخة.',
   description: 'هذه نسخة تعريفية أولى لهوية صنّاع الأثر في سوهاج. مساحات المشاركة المعروضة أفكار مقترحة، ولا تعني وجود برامج أو تسجيل مفتوح.',
-  items: ['تُضاف بيانات الفريق، وقنواته الرسمية، والأنشطة الفعلية بعد اعتمادها.', 'لا يعرض الموقع شراكات أو أرقام إنجازات أو صفة قانونية غير موثّقة.', 'المشهد الافتتاحي والرسم المستوحى من النيل أعمال بصرية تعبيرية، وليسا توثيقًا لنشاط أو خريطة للفروع.'], action: false
+  items: ['تُضاف بيانات الفريق، وقنواته الرسمية، والأنشطة الفعلية بعد اعتمادها.', 'لا يعرض الموقع شراكات أو أرقام إنجازات أو صفة قانونية غير موثّقة.', 'الصور مولّدة بصريًا للتعبير عن روح المشاركة، وليست توثيقًا لأنشطة الفريق. والرسم المستوحى من النيل ليس خريطة فروع.'], action: false
 }, event.currentTarget));
 
 function selectedValues() {
@@ -207,6 +207,7 @@ const districtButtons = $$('[data-district]');
 function syncDistrict(district) {
   districtButtons.forEach(button => button.setAttribute('aria-pressed', String(button.dataset.district === district)));
   $('#selected-district').textContent = district;
+  $$('.district-name').forEach(label => { label.textContent = district; });
   if (!result.hidden) renderCard(false);
 }
 districtButtons.forEach(button => button.addEventListener('click', () => {
@@ -230,26 +231,72 @@ $('.ripple-trigger').addEventListener('click', () => {
   rippleCount += 1;
 });
 
-const mobileCta = $('.mobile-participate');
+const galleryDialog = $('#gallery-dialog');
+const galleryItems = [
+  { src: '/assets/community-v2.webp', title: 'لما الفكرة تجمع ناسها.' },
+  { src: '/assets/green-v2.webp', title: 'الخير كمان بينمو.' },
+  { src: '/assets/creative-v2.webp', title: 'الموهبة لما تلاقي مكان.' }
+];
+let galleryIndex = 0;
+let galleryTrigger = null;
+function renderGallery() {
+  const item = galleryItems[galleryIndex];
+  $('#gallery-image').src = item.src;
+  $('#gallery-image').alt = `صورة تعبيرية: ${item.title}`;
+  $('#gallery-title').textContent = item.title;
+  $('#gallery-count').textContent = `${galleryIndex + 1} / ${galleryItems.length}`;
+}
+function moveGallery(direction) {
+  galleryIndex = (galleryIndex + direction + galleryItems.length) % galleryItems.length;
+  renderGallery();
+}
+$$('[data-gallery]').forEach(button => button.addEventListener('click', () => {
+  galleryIndex = Number(button.dataset.gallery) || 0;
+  galleryTrigger = button;
+  renderGallery();
+  galleryDialog.showModal();
+  document.body.classList.add('dialog-is-open');
+}));
+$('.gallery-close').addEventListener('click', () => galleryDialog.close());
+$('#gallery-prev').addEventListener('click', () => moveGallery(-1));
+$('#gallery-next').addEventListener('click', () => moveGallery(1));
+galleryDialog.addEventListener('click', event => { if (event.target === galleryDialog) galleryDialog.close(); });
+galleryDialog.addEventListener('keydown', event => {
+  if (event.key === 'ArrowLeft') { event.preventDefault(); moveGallery(1); }
+  if (event.key === 'ArrowRight') { event.preventDefault(); moveGallery(-1); }
+});
+galleryDialog.addEventListener('close', () => {
+  document.body.classList.remove('dialog-is-open');
+  if (galleryTrigger instanceof HTMLElement) galleryTrigger.focus({ preventScroll: true });
+});
+
+const chapterDock = $('.chapter-dock');
+const chapterLabels = { top: 'البداية', story: 'الحكاية', circles: 'مسارات الأثر', moments: 'ملامح الأثر', participate: 'بطاقة أثرك', sohag: 'روح سوهاج', questions: 'سؤال وبداية' };
+const chapterLinks = $$('[data-chapter]');
+let currentChapter = 'top';
+function activateChapter(id) {
+  if (currentChapter === id) return;
+  currentChapter = id;
+  $('#current-crumb').textContent = chapterLabels[id] || 'البداية';
+  chapterLinks.forEach(link => {
+    const active = link.dataset.chapter === id;
+    link.classList.toggle('active', active);
+    if (active) link.setAttribute('aria-current', 'location');
+    else link.removeAttribute('aria-current');
+  });
+}
 if ('IntersectionObserver' in window) {
-  let heroVisible = true;
-  let workshopVisible = false;
   const ctaObserver = new IntersectionObserver(entries => {
     for (const entry of entries) {
-      if (entry.target.id === 'participate') workshopVisible = entry.isIntersecting;
-      else heroVisible = entry.isIntersecting;
+      chapterDock.classList.toggle('is-quiet', entry.isIntersecting);
     }
-    mobileCta.classList.toggle('is-hidden', heroVisible || workshopVisible);
   }, { threshold: 0.08 });
   ctaObserver.observe($('#participate'));
-  ctaObserver.observe($('.hero'));
-  const sections = $$('#story, #circles, #sohag, #questions');
-  const navLinks = $$('.desktop-nav a');
+  const sections = $$('#story, #circles, #moments, #participate, #sohag, #questions');
   const navObserver = new IntersectionObserver(entries => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) navLinks.forEach(link => link.classList.toggle('active', link.hash === `#${entry.target.id}`));
-    });
-  }, { rootMargin: '-20% 0px -45% 0px', threshold: 0 });
+    const visible = entries.filter(entry => entry.isIntersecting).sort((a, b) => b.intersectionRatio - a.intersectionRatio);
+    if (visible.length) activateChapter(visible[0].target.id);
+  }, { rootMargin: '-18% 0px -45% 0px', threshold: [0, 0.1, 0.4] });
   sections.forEach(section => navObserver.observe(section));
 }
 
@@ -257,6 +304,8 @@ let scrollQueued = false;
 function updateScroll() {
   const max = document.documentElement.scrollHeight - window.innerHeight;
   $('.scroll-progress').style.width = `${max > 0 ? Math.min(100, Math.max(0, window.scrollY / max * 100)) : 0}%`;
+  document.body.classList.toggle('scrolled', window.scrollY > 320);
+  if (window.scrollY < 180) activateChapter('top');
   scrollQueued = false;
 }
 window.addEventListener('scroll', () => {
